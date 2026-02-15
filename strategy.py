@@ -1,6 +1,7 @@
 """
 Enhanced edge detection strategy for 5m BTC markets.
 Multiple signals combined for stronger edge.
+Tuned for frequent trading.
 """
 
 from dataclasses import dataclass, field
@@ -18,7 +19,8 @@ class Signal:
     
     @property
     def should_bet(self) -> bool:
-        return self.edge > 0 and self.confidence in ("MEDIUM", "HIGH")
+        # Allow all confidence levels - sizing handles risk
+        return self.edge > 0
 
 class EnhancedStrategy:
     """
@@ -30,7 +32,7 @@ class EnhancedStrategy:
     5. Price vs VWAP-like measure
     """
     
-    def __init__(self, min_edge: float = 0.03):
+    def __init__(self, min_edge: float = 0.01):
         self.min_edge = min_edge
         self.recent_predictions: list[dict] = []
         
@@ -62,14 +64,14 @@ class EnhancedStrategy:
         
         # 3. Volatility
         vol = price_feed.get_volatility(300) or 0.0005
-        is_high_vol = vol > 0.001
+        is_high_vol = vol > 0.0015  # Raised threshold
         components['volatility'] = vol
         components['high_vol'] = is_high_vol
         
         # 4. Mean reversion signal (large recent move = expect pullback)
         mean_reversion_signal = 0
-        if abs(mom_30s) > 0.002:  # >0.2% in 30s is big
-            mean_reversion_signal = -mom_30s * 0.3  # Expect 30% reversion
+        if abs(mom_30s) > 0.003:  # >0.3% in 30s is big
+            mean_reversion_signal = -mom_30s * 0.25
         components['mean_reversion'] = mean_reversion_signal
         
         # 5. Trend alignment (all timeframes agree?)
@@ -80,43 +82,42 @@ class EnhancedStrategy:
             trend_alignment = -1  # All bearish
         components['trend_alignment'] = trend_alignment
         
-        # Combine signals
-        # Weighted momentum
+        # Combine signals - weighted momentum
         weighted_mom = (
-            mom_30s * 0.35 +  # Recent momentum most important
+            mom_30s * 0.40 +  # Recent momentum most important
             mom_1m * 0.30 +
             mom_3m * 0.20 +
-            mom_5m * 0.15
+            mom_5m * 0.10
         )
         
         # Add acceleration bonus
         if mom_accel * weighted_mom > 0:  # Acceleration in same direction
-            weighted_mom *= 1.2
+            weighted_mom *= 1.3
             
         # Add mean reversion for extreme moves
-        if abs(mom_30s) > 0.003:  # Very large move
+        if abs(mom_30s) > 0.004:  # Very large move
             weighted_mom += mean_reversion_signal
             
         # Trend alignment bonus
         if trend_alignment != 0:
-            weighted_mom *= 1.15
+            weighted_mom *= 1.2
             
         components['weighted_mom'] = weighted_mom
         
-        # Convert to probability
-        # Scale: 0.1% momentum ≈ 5% edge
-        raw_edge = weighted_mom * 50  # 0.001 -> 0.05
-        raw_edge = max(-0.35, min(0.35, raw_edge))  # Cap at ±35%
+        # Convert to probability - more aggressive scaling
+        # Scale: 0.05% momentum = 5% edge
+        raw_edge = weighted_mom * 100  # More sensitive (was 50)
+        raw_edge = max(-0.40, min(0.40, raw_edge))  # Cap at +/-40%
         
         # Reduce edge in high vol (less predictable)
         if is_high_vol:
-            raw_edge *= 0.7
+            raw_edge *= 0.8  # Less penalty (was 0.7)
             
         # Reduce edge near expiry (execution risk)
-        if time_remaining_sec < 60:
-            raw_edge *= 0.5
-        elif time_remaining_sec < 120:
-            raw_edge *= 0.8
+        if time_remaining_sec < 45:
+            raw_edge *= 0.6
+        elif time_remaining_sec < 90:
+            raw_edge *= 0.85
             
         # Direction and probability
         direction = "UP" if weighted_mom >= 0 else "DOWN"
@@ -128,10 +129,10 @@ class EnhancedStrategy:
         # Actual edge vs market
         edge = our_prob - market_prob
         
-        # Confidence level
-        if edge > 0.12 and time_remaining_sec > 90:
+        # Confidence level - lowered thresholds
+        if edge > 0.08 and time_remaining_sec > 60:
             confidence = "HIGH"
-        elif edge > 0.06 and time_remaining_sec > 60:
+        elif edge > 0.03 and time_remaining_sec > 45:
             confidence = "MEDIUM"
         else:
             confidence = "LOW"
@@ -153,28 +154,29 @@ class EnhancedStrategy:
         daily_pnl: float,
         max_daily_loss: float
     ) -> float:
-        """Kelly-inspired bet sizing"""
+        """Kelly-inspired bet sizing with confidence tiers"""
         
         if daily_pnl <= -max_daily_loss:
             return 0.0
             
-        if signal.confidence == "LOW":
-            return 0.0
-            
-        # Base multiplier
-        mult = 1.5 if signal.confidence == "HIGH" else 1.0
+        # Base multiplier by confidence
+        if signal.confidence == "HIGH":
+            mult = 1.5
+        elif signal.confidence == "MEDIUM":
+            mult = 1.0
+        else:  # LOW - still trade but smaller
+            mult = 0.5
         
         # Scale by edge (Kelly-ish)
-        # Full Kelly would be: edge / odds, but we use fractional
-        kelly_fraction = 0.25  # Use 25% Kelly
-        edge_mult = (signal.edge / 0.10) * kelly_fraction
-        edge_mult = max(0.5, min(2.0, edge_mult))
+        kelly_fraction = 0.3  # Use 30% Kelly (was 25%)
+        edge_mult = (signal.edge / 0.08) * kelly_fraction
+        edge_mult = max(0.4, min(2.5, edge_mult))
         
         # Final size
         size = base_size * mult * edge_mult
         
         # Risk limits
-        size = min(size, bankroll * 0.15)  # Max 15% of bankroll
+        size = min(size, bankroll * 0.20)  # Max 20% of bankroll (was 15%)
         size = min(size, max_daily_loss + daily_pnl)  # Respect daily limit
         
         return max(0, round(size, 2))

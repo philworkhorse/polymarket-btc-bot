@@ -9,8 +9,8 @@ CHAIN_ID = 137
 PRIVATE_KEY = os.getenv("POLYMARKET_PRIVATE_KEY")
 FUNDER_ADDRESS = os.getenv("POLYMARKET_FUNDER_ADDRESS")
 
-# Strategy - lowered since we have multi-factor edge
-MIN_EDGE = float(os.getenv("MIN_EDGE", "0.03"))  # 3% min edge
+# Strategy - aggressive for frequent trades
+MIN_EDGE = float(os.getenv("MIN_EDGE", "0.01"))  # 1% min edge (was 3%)
 BET_SIZE = float(os.getenv("BET_SIZE_USDC", "10"))
 MAX_DAILY_LOSS = float(os.getenv("MAX_DAILY_LOSS", "50"))
 
