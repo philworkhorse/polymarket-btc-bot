@@ -51,9 +51,9 @@ DASHBOARD_HTML = """
             --accent: #f97316;
             --accent-dim: rgba(249, 115, 22, 0.15);
             --up: #22c55e;
-            --up-dim: rgba(34, 197, 94, 0.12);
+            --up-dim: rgba(34, 197, 94, 0.15);
             --down: #ef4444;
-            --down-dim: rgba(239, 68, 68, 0.12);
+            --down-dim: rgba(239, 68, 68, 0.15);
             --pending: #eab308;
         }
         
@@ -137,6 +137,197 @@ DASHBOARD_HTML = """
             .hero { grid-template-columns: 1fr 1fr; }
         }
         
+        /* Prediction Visual */
+        .prediction-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+            padding: 32px;
+        }
+        
+        .prediction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .prediction-title {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+        
+        .prediction-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 32px;
+            align-items: center;
+        }
+        
+        @media (max-width: 800px) {
+            .prediction-content { 
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+        }
+        
+        .price-display {
+            text-align: center;
+        }
+        
+        .price-display .current {
+            font-family: 'Space Mono', monospace;
+            font-size: 36px;
+            font-weight: 700;
+        }
+        
+        .price-display .change {
+            font-family: 'Space Mono', monospace;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        
+        .price-display .change.up { color: var(--up); }
+        .price-display .change.down { color: var(--down); }
+        
+        /* Direction Arrow */
+        .direction-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .direction-arrow {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .direction-arrow.up {
+            background: var(--up-dim);
+            border: 3px solid var(--up);
+        }
+        
+        .direction-arrow.down {
+            background: var(--down-dim);
+            border: 3px solid var(--down);
+        }
+        
+        .direction-arrow.neutral {
+            background: var(--surface-2);
+            border: 3px solid var(--border);
+        }
+        
+        .direction-arrow svg {
+            width: 48px;
+            height: 48px;
+        }
+        
+        .direction-arrow.up svg { color: var(--up); }
+        .direction-arrow.down svg { color: var(--down); }
+        .direction-arrow.neutral svg { color: var(--text-dim); }
+        
+        .direction-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .direction-label.up { color: var(--up); }
+        .direction-label.down { color: var(--down); }
+        .direction-label.neutral { color: var(--text-dim); }
+        
+        .probability-display {
+            text-align: center;
+        }
+        
+        .probability-display .prob-value {
+            font-family: 'Space Mono', monospace;
+            font-size: 48px;
+            font-weight: 700;
+        }
+        
+        .probability-display .prob-value.up { color: var(--up); }
+        .probability-display .prob-value.down { color: var(--down); }
+        
+        .probability-display .prob-label {
+            font-size: 12px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 4px;
+        }
+        
+        .probability-bar {
+            margin-top: 16px;
+            display: flex;
+            gap: 4px;
+            height: 8px;
+        }
+        
+        .prob-segment {
+            flex: 1;
+            background: var(--surface-2);
+            border-radius: 2px;
+        }
+        
+        .prob-segment.filled.up { background: var(--up); }
+        .prob-segment.filled.down { background: var(--down); }
+        
+        /* Confidence Gauge */
+        .confidence-section {
+            text-align: center;
+        }
+        
+        .confidence-gauge {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .gauge-segment {
+            width: 32px;
+            height: 48px;
+            background: var(--surface-2);
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .gauge-segment.low { border-bottom: 3px solid var(--pending); }
+        .gauge-segment.med { border-bottom: 3px solid var(--accent); }
+        .gauge-segment.high { border-bottom: 3px solid var(--up); }
+        
+        .gauge-segment.active.low { background: rgba(234, 179, 8, 0.3); }
+        .gauge-segment.active.med { background: rgba(249, 115, 22, 0.3); }
+        .gauge-segment.active.high { background: rgba(34, 197, 94, 0.3); }
+        
+        .confidence-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .confidence-label.low { color: var(--pending); }
+        .confidence-label.med { color: var(--accent); }
+        .confidence-label.high { color: var(--up); }
+        
+        .edge-value {
+            font-family: 'Space Mono', monospace;
+            font-size: 14px;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+        
+        /* Panels */
         .panels {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -167,45 +358,7 @@ DASHBOARD_HTML = """
             padding: 20px;
         }
         
-        .price-block {
-            text-align: center;
-            padding: 32px 20px;
-        }
-        
-        .price-block .price {
-            font-family: 'Space Mono', monospace;
-            font-size: 42px;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-        }
-        
-        .price-block .change {
-            font-family: 'Space Mono', monospace;
-            font-size: 14px;
-            margin-top: 8px;
-        }
-        
-        .price-block .change.up { color: var(--up); }
-        .price-block .change.down { color: var(--down); }
-        
-        .signal-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-        
-        .signal-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border);
-            font-size: 13px;
-        }
-        
-        .signal-row:last-child { border-bottom: none; }
-        .signal-row .key { color: var(--text-dim); }
-        .signal-row .val { font-family: 'Space Mono', monospace; font-weight: 500; }
-        
+        /* Components */
         .components {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -255,6 +408,7 @@ DASHBOARD_HTML = """
         .bar-fill.up { background: var(--up); }
         .bar-fill.down { background: var(--down); }
         
+        /* Log */
         .log-scroll {
             max-height: 280px;
             overflow-y: auto;
@@ -278,6 +432,7 @@ DASHBOARD_HTML = """
         .log-entry.win { color: var(--up); }
         .log-entry.loss { color: var(--down); }
         
+        /* Trades */
         .trades-list {
             max-height: 320px;
             overflow-y: auto;
@@ -401,51 +556,78 @@ DASHBOARD_HTML = """
             </div>
         </div>
         
-        <div class="panels">
-            <div class="panel">
-                <div class="panel-head">Price</div>
-                <div class="price-block">
-                    <div class="price">${{ "{:,.2f}".format(price) if price else "---" }}</div>
+        <!-- Main Prediction Panel -->
+        <div class="prediction-panel">
+            <div class="prediction-header">
+                <span class="prediction-title">Current Prediction</span>
+            </div>
+            
+            <div class="prediction-content">
+                <!-- Price -->
+                <div class="price-display">
+                    <div class="current">${{ "{:,.2f}".format(price) if price else "---" }}</div>
                     {% if momentum_1m %}
                     <div class="change {{ 'up' if momentum_1m >= 0 else 'down' }}">
                         {{ "%+.3f"|format(momentum_1m * 100) }}% / 1m
                     </div>
                     {% endif %}
                 </div>
-            </div>
-            
-            <div class="panel">
-                <div class="panel-head">Signal</div>
-                <div class="panel-body">
+                
+                <!-- Direction Arrow -->
+                <div class="direction-display">
                     {% if last_signal %}
-                    <div class="signal-grid">
-                        <div>
-                            <div class="signal-row">
-                                <span class="key">Direction</span>
-                                <span class="val">{{ last_signal.direction }}</span>
-                            </div>
-                            <div class="signal-row">
-                                <span class="key">Edge</span>
-                                <span class="val">{{ "%.1f"|format(last_signal.edge * 100) }}%</span>
-                            </div>
-                            <div class="signal-row">
-                                <span class="key">Confidence</span>
-                                <span class="val">{{ last_signal.confidence }}</span>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="signal-row">
-                                <span class="key">Our Prob</span>
-                                <span class="val">{{ "%.0f"|format(last_signal.our_probability * 100) }}%</span>
-                            </div>
-                            <div class="signal-row">
-                                <span class="key">Market</span>
-                                <span class="val">{{ "%.0f"|format(last_signal.market_probability * 100) }}%</span>
-                            </div>
-                        </div>
+                    <div class="direction-arrow {{ last_signal.direction|lower }}">
+                        {% if last_signal.direction == "UP" %}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 19V5M5 12l7-7 7 7"/>
+                        </svg>
+                        {% else %}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 5v14M5 12l7 7 7-7"/>
+                        </svg>
+                        {% endif %}
+                    </div>
+                    <div class="direction-label {{ last_signal.direction|lower }}">{{ last_signal.direction }}</div>
+                    
+                    <!-- Probability Bar -->
+                    <div class="probability-bar">
+                        {% set prob_pct = (last_signal.our_probability * 100)|int %}
+                        {% for i in range(10) %}
+                        <div class="prob-segment {{ 'filled ' + last_signal.direction|lower if (i + 1) * 10 <= prob_pct else '' }}"></div>
+                        {% endfor %}
                     </div>
                     {% else %}
-                    <div class="empty">Awaiting signal</div>
+                    <div class="direction-arrow neutral">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
+                        </svg>
+                    </div>
+                    <div class="direction-label neutral">WAITING</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Confidence & Probability -->
+                <div class="confidence-section">
+                    {% if last_signal %}
+                    <div class="probability-display">
+                        <div class="prob-value {{ last_signal.direction|lower }}">{{ "%.0f"|format(last_signal.our_probability * 100) }}%</div>
+                        <div class="prob-label">Our Probability</div>
+                    </div>
+                    
+                    <div style="margin-top: 24px;">
+                        <div class="confidence-gauge">
+                            <div class="gauge-segment low {{ 'active' if last_signal.confidence in ['LOW', 'MEDIUM', 'HIGH'] else '' }}"></div>
+                            <div class="gauge-segment med {{ 'active' if last_signal.confidence in ['MEDIUM', 'HIGH'] else '' }}"></div>
+                            <div class="gauge-segment high {{ 'active' if last_signal.confidence == 'HIGH' else '' }}"></div>
+                        </div>
+                        <div class="confidence-label {{ last_signal.confidence|lower }}">{{ last_signal.confidence }}</div>
+                        <div class="edge-value">Edge: {{ "%.1f"|format(last_signal.edge * 100) }}%</div>
+                    </div>
+                    {% else %}
+                    <div class="probability-display">
+                        <div class="prob-value" style="color: var(--text-dim);">--</div>
+                        <div class="prob-label">Awaiting Signal</div>
+                    </div>
                     {% endif %}
                 </div>
             </div>
@@ -453,7 +635,7 @@ DASHBOARD_HTML = """
         
         {% if components %}
         <div class="panel" style="margin-bottom: 24px;">
-            <div class="panel-head">Components</div>
+            <div class="panel-head">Strategy Components</div>
             <div class="panel-body">
                 <div class="components">
                     <div class="comp">
@@ -498,9 +680,9 @@ DASHBOARD_HTML = """
                     </div>
                     <div class="comp">
                         <div class="label">Trend</div>
-                        <div class="value">
-                            {% if components.trend_alignment == 1 %}UP
-                            {% elif components.trend_alignment == -1 %}DOWN
+                        <div class="value {{ 'up' if components.trend_alignment == 1 else 'down' if components.trend_alignment == -1 else '' }}">
+                            {% if components.trend_alignment == 1 %}ALIGNED UP
+                            {% elif components.trend_alignment == -1 %}ALIGNED DOWN
                             {% else %}MIXED{% endif %}
                         </div>
                     </div>
@@ -511,7 +693,7 @@ DASHBOARD_HTML = """
         
         <div class="panels">
             <div class="panel">
-                <div class="panel-head">Log</div>
+                <div class="panel-head">Activity Log</div>
                 <div class="panel-body">
                     <div class="log-scroll">
                         {% for log in logs|reverse %}
@@ -527,7 +709,7 @@ DASHBOARD_HTML = """
             </div>
             
             <div class="panel">
-                <div class="panel-head">Trades</div>
+                <div class="panel-head">Recent Trades</div>
                 <div class="panel-body">
                     <div class="trades-list">
                         {% if pending %}
