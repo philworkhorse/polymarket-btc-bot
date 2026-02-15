@@ -137,22 +137,23 @@ DASHBOARD_HTML = """
             .hero { grid-template-columns: 1fr 1fr; }
         }
         
-        /* Prediction Visual */
-        .prediction-panel {
+        /* Live Chart */
+        .chart-panel {
             background: var(--surface);
             border: 1px solid var(--border);
             margin-bottom: 24px;
-            padding: 32px;
+            position: relative;
         }
         
-        .prediction-header {
+        .chart-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
         }
         
-        .prediction-title {
+        .chart-title {
             font-size: 11px;
             font-weight: 600;
             letter-spacing: 0.1em;
@@ -160,75 +161,110 @@ DASHBOARD_HTML = """
             color: var(--text-dim);
         }
         
-        .prediction-content {
-            display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            gap: 32px;
-            align-items: center;
-        }
-        
-        @media (max-width: 800px) {
-            .prediction-content { 
-                grid-template-columns: 1fr;
-                gap: 24px;
-            }
-        }
-        
-        .price-display {
-            text-align: center;
-        }
-        
-        .price-display .current {
+        .chart-price {
             font-family: 'Space Mono', monospace;
-            font-size: 36px;
+            font-size: 24px;
             font-weight: 700;
         }
         
-        .price-display .change {
+        .chart-change {
             font-family: 'Space Mono', monospace;
-            font-size: 14px;
-            margin-top: 8px;
+            font-size: 13px;
+            margin-left: 12px;
         }
         
-        .price-display .change.up { color: var(--up); }
-        .price-display .change.down { color: var(--down); }
+        .chart-change.up { color: var(--up); }
+        .chart-change.down { color: var(--down); }
+        
+        .chart-container {
+            position: relative;
+            height: 200px;
+            padding: 20px;
+        }
+        
+        #priceChart {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .chart-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 16px;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+        
+        .chart-overlay span {
+            font-family: 'Space Mono', monospace;
+        }
+        
+        /* Prediction Panel */
+        .prediction-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+        
+        @media (max-width: 800px) {
+            .prediction-row { grid-template-columns: 1fr; }
+        }
+        
+        .pred-cell {
+            background: var(--surface);
+            padding: 24px;
+            text-align: center;
+        }
+        
+        .pred-cell .label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+        }
         
         /* Direction Arrow */
         .direction-display {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 16px;
+            gap: 8px;
         }
         
         .direction-arrow {
-            width: 120px;
-            height: 120px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
         }
         
         .direction-arrow.up {
             background: var(--up-dim);
-            border: 3px solid var(--up);
+            border: 2px solid var(--up);
         }
         
         .direction-arrow.down {
             background: var(--down-dim);
-            border: 3px solid var(--down);
+            border: 2px solid var(--down);
         }
         
         .direction-arrow.neutral {
             background: var(--surface-2);
-            border: 3px solid var(--border);
+            border: 2px solid var(--border);
         }
         
         .direction-arrow svg {
-            width: 48px;
-            height: 48px;
+            width: 32px;
+            height: 32px;
         }
         
         .direction-arrow.up svg { color: var(--up); }
@@ -237,7 +273,7 @@ DASHBOARD_HTML = """
         
         .direction-label {
             font-family: 'Space Mono', monospace;
-            font-size: 24px;
+            font-size: 18px;
             font-weight: 700;
         }
         
@@ -245,84 +281,69 @@ DASHBOARD_HTML = """
         .direction-label.down { color: var(--down); }
         .direction-label.neutral { color: var(--text-dim); }
         
-        .probability-display {
-            text-align: center;
-        }
-        
-        .probability-display .prob-value {
+        /* Probability */
+        .prob-value {
             font-family: 'Space Mono', monospace;
-            font-size: 48px;
+            font-size: 36px;
             font-weight: 700;
         }
         
-        .probability-display .prob-value.up { color: var(--up); }
-        .probability-display .prob-value.down { color: var(--down); }
+        .prob-value.up { color: var(--up); }
+        .prob-value.down { color: var(--down); }
         
-        .probability-display .prob-label {
-            font-size: 12px;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-top: 4px;
-        }
-        
-        .probability-bar {
-            margin-top: 16px;
+        .prob-bar {
             display: flex;
-            gap: 4px;
-            height: 8px;
+            gap: 3px;
+            margin-top: 12px;
+            justify-content: center;
         }
         
-        .prob-segment {
-            flex: 1;
+        .prob-seg {
+            width: 16px;
+            height: 6px;
             background: var(--surface-2);
-            border-radius: 2px;
+            border-radius: 1px;
         }
         
-        .prob-segment.filled.up { background: var(--up); }
-        .prob-segment.filled.down { background: var(--down); }
+        .prob-seg.filled.up { background: var(--up); }
+        .prob-seg.filled.down { background: var(--down); }
         
-        /* Confidence Gauge */
-        .confidence-section {
-            text-align: center;
-        }
-        
-        .confidence-gauge {
+        /* Confidence */
+        .conf-gauge {
             display: flex;
             justify-content: center;
-            gap: 8px;
-            margin-bottom: 12px;
+            gap: 6px;
+            margin-bottom: 8px;
         }
         
-        .gauge-segment {
-            width: 32px;
-            height: 48px;
+        .conf-bar {
+            width: 24px;
+            height: 36px;
             background: var(--surface-2);
-            border-radius: 4px;
-            transition: all 0.3s;
+            border-radius: 3px;
         }
         
-        .gauge-segment.low { border-bottom: 3px solid var(--pending); }
-        .gauge-segment.med { border-bottom: 3px solid var(--accent); }
-        .gauge-segment.high { border-bottom: 3px solid var(--up); }
+        .conf-bar.low { border-bottom: 2px solid var(--pending); }
+        .conf-bar.med { border-bottom: 2px solid var(--accent); }
+        .conf-bar.high { border-bottom: 2px solid var(--up); }
         
-        .gauge-segment.active.low { background: rgba(234, 179, 8, 0.3); }
-        .gauge-segment.active.med { background: rgba(249, 115, 22, 0.3); }
-        .gauge-segment.active.high { background: rgba(34, 197, 94, 0.3); }
+        .conf-bar.active.low { background: rgba(234, 179, 8, 0.25); }
+        .conf-bar.active.med { background: rgba(249, 115, 22, 0.25); }
+        .conf-bar.active.high { background: rgba(34, 197, 94, 0.25); }
         
-        .confidence-label {
+        .conf-label {
             font-family: 'Space Mono', monospace;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
         }
         
-        .confidence-label.low { color: var(--pending); }
-        .confidence-label.med { color: var(--accent); }
-        .confidence-label.high { color: var(--up); }
+        .conf-label.low { color: var(--pending); }
+        .conf-label.med { color: var(--accent); }
+        .conf-label.high { color: var(--up); }
         
-        .edge-value {
+        .edge-val {
             font-family: 'Space Mono', monospace;
-            font-size: 14px;
+            font-size: 12px;
             color: var(--text-dim);
             margin-top: 4px;
         }
@@ -362,7 +383,7 @@ DASHBOARD_HTML = """
         .components {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
+            gap: 12px;
         }
         
         @media (max-width: 600px) {
@@ -370,47 +391,32 @@ DASHBOARD_HTML = """
         }
         
         .comp {
-            padding: 12px;
+            padding: 10px;
             background: var(--bg);
             border: 1px solid var(--border);
         }
         
         .comp .label {
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 600;
             letter-spacing: 0.1em;
             text-transform: uppercase;
             color: var(--text-dim);
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
         
         .comp .value {
             font-family: 'Space Mono', monospace;
-            font-size: 15px;
+            font-size: 13px;
             font-weight: 500;
         }
         
         .comp .value.up { color: var(--up); }
         .comp .value.down { color: var(--down); }
         
-        .bar {
-            height: 3px;
-            background: var(--surface-2);
-            margin-top: 8px;
-            overflow: hidden;
-        }
-        
-        .bar-fill {
-            height: 100%;
-            transition: width 0.3s;
-        }
-        
-        .bar-fill.up { background: var(--up); }
-        .bar-fill.down { background: var(--down); }
-        
         /* Log */
         .log-scroll {
-            max-height: 280px;
+            max-height: 240px;
             overflow-y: auto;
             font-family: 'Space Mono', monospace;
             font-size: 11px;
@@ -418,10 +424,10 @@ DASHBOARD_HTML = """
         }
         
         .log-entry {
-            padding: 6px 0;
+            padding: 5px 0;
             border-bottom: 1px solid var(--border);
             display: flex;
-            gap: 12px;
+            gap: 10px;
         }
         
         .log-entry:last-child { border-bottom: none; }
@@ -434,18 +440,18 @@ DASHBOARD_HTML = """
         
         /* Trades */
         .trades-list {
-            max-height: 320px;
+            max-height: 240px;
             overflow-y: auto;
         }
         
         .trade-row {
             display: grid;
-            grid-template-columns: 24px 1fr auto;
-            gap: 12px;
+            grid-template-columns: 20px 1fr auto;
+            gap: 10px;
             align-items: center;
-            padding: 14px 0;
+            padding: 10px 0;
             border-bottom: 1px solid var(--border);
-            font-size: 13px;
+            font-size: 12px;
         }
         
         .trade-row:last-child { border-bottom: none; }
@@ -453,18 +459,18 @@ DASHBOARD_HTML = """
         .trade-row.pending-row {
             background: var(--accent-dim);
             margin: 0 -20px;
-            padding: 14px 20px;
+            padding: 10px 20px;
             border-left: 3px solid var(--accent);
         }
         
         .trade-icon {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 700;
         }
         
@@ -478,7 +484,7 @@ DASHBOARD_HTML = """
         }
         
         .trade-info .meta {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-dim);
             margin-top: 2px;
         }
@@ -486,7 +492,6 @@ DASHBOARD_HTML = """
         .trade-pnl {
             font-family: 'Space Mono', monospace;
             font-weight: 600;
-            text-align: right;
         }
         
         .trade-pnl.positive { color: var(--up); }
@@ -494,10 +499,10 @@ DASHBOARD_HTML = """
         .trade-pnl.pending { color: var(--accent); }
         
         .empty {
-            padding: 40px 20px;
+            padding: 32px 20px;
             text-align: center;
             color: var(--text-dim);
-            font-size: 13px;
+            font-size: 12px;
         }
         
         footer {
@@ -556,24 +561,30 @@ DASHBOARD_HTML = """
             </div>
         </div>
         
-        <!-- Main Prediction Panel -->
-        <div class="prediction-panel">
-            <div class="prediction-header">
-                <span class="prediction-title">Current Prediction</span>
-            </div>
-            
-            <div class="prediction-content">
-                <!-- Price -->
-                <div class="price-display">
-                    <div class="current">${{ "{:,.2f}".format(price) if price else "---" }}</div>
-                    {% if momentum_1m %}
-                    <div class="change {{ 'up' if momentum_1m >= 0 else 'down' }}">
-                        {{ "%+.3f"|format(momentum_1m * 100) }}% / 1m
-                    </div>
-                    {% endif %}
+        <!-- Live Price Chart -->
+        <div class="chart-panel">
+            <div class="chart-header">
+                <span class="chart-title">BTC/USD Live</span>
+                <div>
+                    <span class="chart-price" id="livePrice">${{ "{:,.2f}".format(price) if price else "---" }}</span>
+                    <span class="chart-change {{ 'up' if momentum_1m and momentum_1m >= 0 else 'down' }}" id="liveChange">
+                        {% if momentum_1m %}{{ "%+.3f"|format(momentum_1m * 100) }}%{% endif %}
+                    </span>
                 </div>
-                
-                <!-- Direction Arrow -->
+            </div>
+            <div class="chart-container">
+                <canvas id="priceChart"></canvas>
+            </div>
+            <div class="chart-overlay">
+                <span>5m window</span>
+                <span id="chartRange"></span>
+            </div>
+        </div>
+        
+        <!-- Prediction Row -->
+        <div class="prediction-row">
+            <div class="pred-cell">
+                <div class="label">Prediction</div>
                 <div class="direction-display">
                     {% if last_signal %}
                     <div class="direction-arrow {{ last_signal.direction|lower }}">
@@ -588,48 +599,50 @@ DASHBOARD_HTML = """
                         {% endif %}
                     </div>
                     <div class="direction-label {{ last_signal.direction|lower }}">{{ last_signal.direction }}</div>
-                    
-                    <!-- Probability Bar -->
-                    <div class="probability-bar">
-                        {% set prob_pct = (last_signal.our_probability * 100)|int %}
-                        {% for i in range(10) %}
-                        <div class="prob-segment {{ 'filled ' + last_signal.direction|lower if (i + 1) * 10 <= prob_pct else '' }}"></div>
-                        {% endfor %}
-                    </div>
                     {% else %}
                     <div class="direction-arrow neutral">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
                         </svg>
                     </div>
-                    <div class="direction-label neutral">WAITING</div>
+                    <div class="direction-label neutral">WAIT</div>
                     {% endif %}
                 </div>
-                
-                <!-- Confidence & Probability -->
-                <div class="confidence-section">
-                    {% if last_signal %}
-                    <div class="probability-display">
-                        <div class="prob-value {{ last_signal.direction|lower }}">{{ "%.0f"|format(last_signal.our_probability * 100) }}%</div>
-                        <div class="prob-label">Our Probability</div>
-                    </div>
-                    
-                    <div style="margin-top: 24px;">
-                        <div class="confidence-gauge">
-                            <div class="gauge-segment low {{ 'active' if last_signal.confidence in ['LOW', 'MEDIUM', 'HIGH'] else '' }}"></div>
-                            <div class="gauge-segment med {{ 'active' if last_signal.confidence in ['MEDIUM', 'HIGH'] else '' }}"></div>
-                            <div class="gauge-segment high {{ 'active' if last_signal.confidence == 'HIGH' else '' }}"></div>
-                        </div>
-                        <div class="confidence-label {{ last_signal.confidence|lower }}">{{ last_signal.confidence }}</div>
-                        <div class="edge-value">Edge: {{ "%.1f"|format(last_signal.edge * 100) }}%</div>
-                    </div>
-                    {% else %}
-                    <div class="probability-display">
-                        <div class="prob-value" style="color: var(--text-dim);">--</div>
-                        <div class="prob-label">Awaiting Signal</div>
-                    </div>
-                    {% endif %}
+            </div>
+            
+            <div class="pred-cell">
+                <div class="label">Probability</div>
+                {% if last_signal %}
+                <div class="prob-value {{ last_signal.direction|lower }}">{{ "%.0f"|format(last_signal.our_probability * 100) }}%</div>
+                <div class="prob-bar">
+                    {% set prob_pct = (last_signal.our_probability * 100)|int %}
+                    {% for i in range(10) %}
+                    <div class="prob-seg {{ 'filled ' + last_signal.direction|lower if (i + 1) * 10 <= prob_pct else '' }}"></div>
+                    {% endfor %}
                 </div>
+                {% else %}
+                <div class="prob-value" style="color: var(--text-dim);">--</div>
+                {% endif %}
+            </div>
+            
+            <div class="pred-cell">
+                <div class="label">Confidence</div>
+                {% if last_signal %}
+                <div class="conf-gauge">
+                    <div class="conf-bar low {{ 'active' if last_signal.confidence in ['LOW', 'MEDIUM', 'HIGH'] else '' }}"></div>
+                    <div class="conf-bar med {{ 'active' if last_signal.confidence in ['MEDIUM', 'HIGH'] else '' }}"></div>
+                    <div class="conf-bar high {{ 'active' if last_signal.confidence == 'HIGH' else '' }}"></div>
+                </div>
+                <div class="conf-label {{ last_signal.confidence|lower }}">{{ last_signal.confidence }}</div>
+                <div class="edge-val">Edge: {{ "%.1f"|format(last_signal.edge * 100) }}%</div>
+                {% else %}
+                <div class="conf-gauge">
+                    <div class="conf-bar low"></div>
+                    <div class="conf-bar med"></div>
+                    <div class="conf-bar high"></div>
+                </div>
+                <div class="conf-label" style="color: var(--text-dim);">--</div>
+                {% endif %}
             </div>
         </div>
         
@@ -640,39 +653,19 @@ DASHBOARD_HTML = """
                 <div class="components">
                     <div class="comp">
                         <div class="label">Mom 30s</div>
-                        <div class="value {{ 'up' if components.mom_30s >= 0 else 'down' }}">
-                            {{ "%+.4f"|format(components.mom_30s) }}
-                        </div>
-                        <div class="bar">
-                            <div class="bar-fill {{ 'up' if components.mom_30s >= 0 else 'down' }}" 
-                                 style="width: {{ (min(abs(components.mom_30s) * 10000, 100))|int }}%"></div>
-                        </div>
+                        <div class="value {{ 'up' if components.mom_30s >= 0 else 'down' }}">{{ "%+.4f"|format(components.mom_30s) }}</div>
                     </div>
                     <div class="comp">
                         <div class="label">Mom 1m</div>
-                        <div class="value {{ 'up' if components.mom_1m >= 0 else 'down' }}">
-                            {{ "%+.4f"|format(components.mom_1m) }}
-                        </div>
-                        <div class="bar">
-                            <div class="bar-fill {{ 'up' if components.mom_1m >= 0 else 'down' }}" 
-                                 style="width: {{ (min(abs(components.mom_1m) * 10000, 100))|int }}%"></div>
-                        </div>
+                        <div class="value {{ 'up' if components.mom_1m >= 0 else 'down' }}">{{ "%+.4f"|format(components.mom_1m) }}</div>
                     </div>
                     <div class="comp">
                         <div class="label">Mom 3m</div>
-                        <div class="value {{ 'up' if components.mom_3m >= 0 else 'down' }}">
-                            {{ "%+.4f"|format(components.mom_3m) }}
-                        </div>
-                        <div class="bar">
-                            <div class="bar-fill {{ 'up' if components.mom_3m >= 0 else 'down' }}" 
-                                 style="width: {{ (min(abs(components.mom_3m) * 10000, 100))|int }}%"></div>
-                        </div>
+                        <div class="value {{ 'up' if components.mom_3m >= 0 else 'down' }}">{{ "%+.4f"|format(components.mom_3m) }}</div>
                     </div>
                     <div class="comp">
                         <div class="label">Accel</div>
-                        <div class="value {{ 'up' if components.mom_accel >= 0 else 'down' }}">
-                            {{ "%+.4f"|format(components.mom_accel) }}
-                        </div>
+                        <div class="value {{ 'up' if components.mom_accel >= 0 else 'down' }}">{{ "%+.4f"|format(components.mom_accel) }}</div>
                     </div>
                     <div class="comp">
                         <div class="label">Volatility</div>
@@ -681,9 +674,7 @@ DASHBOARD_HTML = """
                     <div class="comp">
                         <div class="label">Trend</div>
                         <div class="value {{ 'up' if components.trend_alignment == 1 else 'down' if components.trend_alignment == -1 else '' }}">
-                            {% if components.trend_alignment == 1 %}ALIGNED UP
-                            {% elif components.trend_alignment == -1 %}ALIGNED DOWN
-                            {% else %}MIXED{% endif %}
+                            {% if components.trend_alignment == 1 %}UP{% elif components.trend_alignment == -1 %}DOWN{% else %}MIX{% endif %}
                         </div>
                     </div>
                 </div>
@@ -717,20 +708,20 @@ DASHBOARD_HTML = """
                             <div class="trade-icon open">O</div>
                             <div class="trade-info">
                                 <div class="dir">{{ pending.direction }} @ ${{ "{:,.2f}".format(pending.entry_price) }}</div>
-                                <div class="meta">Edge {{ "%.1f"|format(pending.edge * 100) }}% / Size ${{ "%.2f"|format(pending.size) }}</div>
+                                <div class="meta">Edge {{ "%.1f"|format(pending.edge * 100) }}%</div>
                             </div>
                             <div class="trade-pnl pending">OPEN</div>
                         </div>
                         {% endif %}
-                        {% for trade in trades[-10:]|reverse %}
+                        {% for trade in trades[-8:]|reverse %}
                         <div class="trade-row">
                             <div class="trade-icon {{ 'win' if trade.won else 'loss' }}">{{ "W" if trade.won else "L" }}</div>
                             <div class="trade-info">
                                 <div class="dir">{{ trade.direction }} @ ${{ "{:,.2f}".format(trade.entry_price) }}</div>
-                                <div class="meta">Edge {{ "%.1f"|format(trade.edge * 100) }}% / Exit ${{ "{:,.2f}".format(trade.exit_price) if trade.exit_price else "---" }}</div>
+                                <div class="meta">${{ "%+.2f"|format(trade.pnl) if trade.pnl else "---" }}</div>
                             </div>
                             <div class="trade-pnl {{ 'positive' if trade.pnl and trade.pnl >= 0 else 'negative' }}">
-                                ${{ "%+.2f"|format(trade.pnl) if trade.pnl else "---" }}
+                                {{ "%.1f"|format(trade.edge * 100) }}%
                             </div>
                         </div>
                         {% else %}
@@ -745,11 +736,144 @@ DASHBOARD_HTML = """
         
         <footer>
             <span>Started {{ start_time }}</span>
-            <span><span class="pulse"></span>Auto-refresh 5s</span>
+            <span><span class="pulse"></span>Live</span>
         </footer>
     </div>
     
-    <script>setTimeout(() => location.reload(), 5000);</script>
+    <script>
+        const canvas = document.getElementById('priceChart');
+        const ctx = canvas.getContext('2d');
+        let priceData = {{ price_history | tojson }};
+        
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width - 40;
+            canvas.height = rect.height - 40;
+        }
+        
+        function drawChart() {
+            if (!priceData || priceData.length < 2) {
+                ctx.fillStyle = '#a1a1aa';
+                ctx.font = '12px Space Mono';
+                ctx.textAlign = 'center';
+                ctx.fillText('Collecting price data...', canvas.width / 2, canvas.height / 2);
+                return;
+            }
+            
+            const w = canvas.width;
+            const h = canvas.height;
+            const padding = 10;
+            
+            // Get price range
+            const prices = priceData.map(p => p[0]);
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+            const priceRange = maxPrice - minPrice || 1;
+            
+            // Update range display
+            const rangeEl = document.getElementById('chartRange');
+            if (rangeEl) {
+                rangeEl.textContent = '$' + minPrice.toFixed(0) + ' - $' + maxPrice.toFixed(0);
+            }
+            
+            // Clear
+            ctx.clearRect(0, 0, w, h);
+            
+            // Draw grid
+            ctx.strokeStyle = '#27272a';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                const y = padding + (h - 2 * padding) * i / 4;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            }
+            
+            // Determine color based on trend
+            const startPrice = prices[0];
+            const endPrice = prices[prices.length - 1];
+            const isUp = endPrice >= startPrice;
+            const lineColor = isUp ? '#22c55e' : '#ef4444';
+            const fillColor = isUp ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)';
+            
+            // Draw filled area
+            ctx.beginPath();
+            ctx.moveTo(padding, h - padding);
+            
+            priceData.forEach((point, i) => {
+                const x = padding + (w - 2 * padding) * i / (priceData.length - 1);
+                const y = padding + (h - 2 * padding) * (1 - (point[0] - minPrice) / priceRange);
+                if (i === 0) ctx.lineTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            
+            ctx.lineTo(w - padding, h - padding);
+            ctx.closePath();
+            ctx.fillStyle = fillColor;
+            ctx.fill();
+            
+            // Draw line
+            ctx.beginPath();
+            priceData.forEach((point, i) => {
+                const x = padding + (w - 2 * padding) * i / (priceData.length - 1);
+                const y = padding + (h - 2 * padding) * (1 - (point[0] - minPrice) / priceRange);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.strokeStyle = lineColor;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw current price dot
+            const lastX = w - padding;
+            const lastY = padding + (h - 2 * padding) * (1 - (endPrice - minPrice) / priceRange);
+            ctx.beginPath();
+            ctx.arc(lastX, lastY, 4, 0, Math.PI * 2);
+            ctx.fillStyle = lineColor;
+            ctx.fill();
+        }
+        
+        resizeCanvas();
+        drawChart();
+        
+        // Fetch and update
+        async function updateChart() {
+            try {
+                const resp = await fetch('/api/prices');
+                const data = await resp.json();
+                if (data.prices && data.prices.length > 0) {
+                    priceData = data.prices;
+                    drawChart();
+                    
+                    // Update price display
+                    const priceEl = document.getElementById('livePrice');
+                    const changeEl = document.getElementById('liveChange');
+                    if (priceEl && data.current_price) {
+                        priceEl.textContent = '$' + data.current_price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    }
+                    if (changeEl && data.momentum_1m !== null) {
+                        const pct = (data.momentum_1m * 100).toFixed(3);
+                        changeEl.textContent = (data.momentum_1m >= 0 ? '+' : '') + pct + '%';
+                        changeEl.className = 'chart-change ' + (data.momentum_1m >= 0 ? 'up' : 'down');
+                    }
+                }
+            } catch (e) {
+                console.error('Chart update error:', e);
+            }
+        }
+        
+        // Update chart every 2 seconds
+        setInterval(updateChart, 2000);
+        
+        // Full page refresh every 30 seconds
+        setTimeout(() => location.reload(), 30000);
+        
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            drawChart();
+        });
+    </script>
 </body>
 </html>
 """
@@ -766,12 +890,19 @@ def run_trader():
 def dashboard():
     global trader
     
+    # Get price history for chart
+    price_history = []
+    if trader and trader.price_feed and trader.price_feed.price_history:
+        # Get last 60 points (about 5 min at 1 update/5s)
+        history = list(trader.price_feed.price_history)[-120:]
+        price_history = [[p.price, p.timestamp] for p in history]
+    
     if trader is None:
         return render_template_string(DASHBOARD_HTML,
             price=None, bankroll=1000, total_pnl=0, wins=0, losses=0,
             win_rate=0, trades=[], pending=None, last_signal=None, 
             components=None, momentum_1m=None, logs=list(activity_log),
-            start_time=start_time)
+            start_time=start_time, price_history=price_history)
     
     win_rate = trader.wins / (trader.wins + trader.losses) if (trader.wins + trader.losses) > 0 else 0
     
@@ -796,8 +927,25 @@ def dashboard():
         components=components,
         momentum_1m=momentum_1m,
         logs=list(activity_log),
-        start_time=start_time
+        start_time=start_time,
+        price_history=price_history
     )
+
+@app.route('/api/prices')
+def api_prices():
+    """Return recent price history for live chart"""
+    global trader
+    if trader is None or not trader.price_feed:
+        return jsonify({"prices": [], "current_price": None, "momentum_1m": None})
+    
+    history = list(trader.price_feed.price_history)[-120:]
+    prices = [[p.price, p.timestamp] for p in history]
+    
+    return jsonify({
+        "prices": prices,
+        "current_price": trader.price_feed.current_price,
+        "momentum_1m": trader.price_feed.get_momentum(60)
+    })
 
 @app.route('/api/stats')
 def api_stats():
