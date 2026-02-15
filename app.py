@@ -30,515 +30,544 @@ def log_activity(msg: str, level: str = "info"):
         "level": level
     })
 
-# Dashboard HTML - Clean, practical, modern
 DASHBOARD_HTML = """
 <!DOCTYPE html>
 <html>
 <head>
-    <title>BTC 5m Paper Trader</title>
+    <title>Polymarket BTC</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         :root {
-            --bg: #0d1117;
-            --surface: #161b22;
-            --border: #30363d;
-            --text: #e6edf3;
-            --text-muted: #8b949e;
-            --green: #3fb950;
-            --red: #f85149;
-            --yellow: #d29922;
-            --blue: #58a6ff;
+            --bg: #09090b;
+            --surface: #18181b;
+            --surface-2: #27272a;
+            --border: #3f3f46;
+            --text: #fafafa;
+            --text-dim: #a1a1aa;
+            --accent: #f97316;
+            --accent-dim: rgba(249, 115, 22, 0.15);
+            --up: #22c55e;
+            --up-dim: rgba(34, 197, 94, 0.12);
+            --down: #ef4444;
+            --down-dim: rgba(239, 68, 68, 0.12);
+            --pending: #eab308;
         }
         
         body {
-            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            font-family: 'DM Sans', system-ui, sans-serif;
             background: var(--bg);
             color: var(--text);
             line-height: 1.5;
             min-height: 100vh;
         }
         
+        .mono { font-family: 'Space Mono', monospace; }
+        
         .container {
-            max-width: 1200px;
+            max-width: 1100px;
             margin: 0 auto;
-            padding: 24px;
+            padding: 32px 24px;
         }
         
         header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border);
+            align-items: baseline;
+            margin-bottom: 40px;
         }
         
-        header h1 {
-            font-size: 18px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .status-badge {
-            font-size: 12px;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-weight: 500;
-        }
-        
-        .status-badge.live { background: rgba(63, 185, 80, 0.15); color: var(--green); }
-        .status-badge.pending { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
-        
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-        
-        @media (max-width: 768px) {
-            .grid { grid-template-columns: 1fr; }
-        }
-        
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 16px;
-        }
-        
-        .card-header {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text-muted);
+        .logo {
+            font-family: 'Space Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: var(--accent);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
         }
         
-        .price-display {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 32px;
+        .status {
+            font-size: 11px;
             font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 6px 12px;
+            border-radius: 4px;
         }
         
-        .price-change {
-            font-size: 14px;
-            margin-top: 4px;
-        }
+        .status.scanning { background: var(--surface-2); color: var(--text-dim); }
+        .status.open { background: var(--accent-dim); color: var(--accent); }
         
-        .price-change.up { color: var(--green); }
-        .price-change.down { color: var(--red); }
-        
-        .stats-grid {
+        .hero {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-        
-        @media (max-width: 768px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        
-        .stat {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 16px;
-        }
-        
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-        
-        .stat-value {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 24px;
-            font-weight: 600;
-        }
-        
-        .stat-value.positive { color: var(--green); }
-        .stat-value.negative { color: var(--red); }
-        
-        .signal-card {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-        
-        .signal-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border);
-            font-size: 14px;
-        }
-        
-        .signal-item:last-child { border-bottom: none; }
-        
-        .signal-label { color: var(--text-muted); }
-        
-        .signal-value {
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 500;
-        }
-        
-        .momentum-bar {
-            height: 4px;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 1px;
             background: var(--border);
-            border-radius: 2px;
-            margin-top: 4px;
-            overflow: hidden;
+            border: 1px solid var(--border);
+            margin-bottom: 32px;
         }
         
-        .momentum-fill {
-            height: 100%;
-            border-radius: 2px;
-            transition: width 0.3s ease;
+        .hero-stat {
+            background: var(--surface);
+            padding: 24px;
         }
         
-        .momentum-fill.positive { background: var(--green); }
-        .momentum-fill.negative { background: var(--red); }
+        .hero-stat .label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
         
-        .log-container {
+        .hero-stat .value {
+            font-family: 'Space Mono', monospace;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .hero-stat .value.positive { color: var(--up); }
+        .hero-stat .value.negative { color: var(--down); }
+        
+        @media (max-width: 800px) {
+            .hero { grid-template-columns: 1fr 1fr; }
+        }
+        
+        .panels {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        @media (max-width: 800px) {
+            .panels { grid-template-columns: 1fr; }
+        }
+        
+        .panel {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 8px;
+        }
+        
+        .panel-head {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+        
+        .panel-body {
+            padding: 20px;
+        }
+        
+        .price-block {
+            text-align: center;
+            padding: 32px 20px;
+        }
+        
+        .price-block .price {
+            font-family: 'Space Mono', monospace;
+            font-size: 42px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        
+        .price-block .change {
+            font-family: 'Space Mono', monospace;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        
+        .price-block .change.up { color: var(--up); }
+        .price-block .change.down { color: var(--down); }
+        
+        .signal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        .signal-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+        
+        .signal-row:last-child { border-bottom: none; }
+        .signal-row .key { color: var(--text-dim); }
+        .signal-row .val { font-family: 'Space Mono', monospace; font-weight: 500; }
+        
+        .components {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        
+        @media (max-width: 600px) {
+            .components { grid-template-columns: 1fr 1fr; }
+        }
+        
+        .comp {
+            padding: 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+        }
+        
+        .comp .label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+        }
+        
+        .comp .value {
+            font-family: 'Space Mono', monospace;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        
+        .comp .value.up { color: var(--up); }
+        .comp .value.down { color: var(--down); }
+        
+        .bar {
+            height: 3px;
+            background: var(--surface-2);
+            margin-top: 8px;
             overflow: hidden;
         }
         
-        .log-header {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border);
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .bar-fill {
+            height: 100%;
+            transition: width 0.3s;
         }
         
-        .log-entries {
-            max-height: 300px;
+        .bar-fill.up { background: var(--up); }
+        .bar-fill.down { background: var(--down); }
+        
+        .log-scroll {
+            max-height: 280px;
             overflow-y: auto;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            line-height: 1.7;
         }
         
         .log-entry {
-            padding: 8px 16px;
+            padding: 6px 0;
             border-bottom: 1px solid var(--border);
             display: flex;
             gap: 12px;
         }
         
         .log-entry:last-child { border-bottom: none; }
+        .log-entry .time { color: var(--text-dim); flex-shrink: 0; }
+        .log-entry .msg { word-break: break-word; }
+        .log-entry.signal { color: var(--accent); }
+        .log-entry.trade { color: var(--pending); }
+        .log-entry.win { color: var(--up); }
+        .log-entry.loss { color: var(--down); }
         
-        .log-time { color: var(--text-muted); min-width: 60px; }
-        .log-msg { flex: 1; word-break: break-word; }
-        .log-entry.signal { color: var(--blue); }
-        .log-entry.trade { color: var(--yellow); }
-        .log-entry.win { color: var(--green); }
-        .log-entry.loss { color: var(--red); }
-        
-        .trade-list {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
+        .trades-list {
+            max-height: 320px;
+            overflow-y: auto;
         }
         
-        .trade-header {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border);
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .trade-item {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border);
+        .trade-row {
             display: grid;
-            grid-template-columns: auto 1fr auto auto;
-            gap: 16px;
+            grid-template-columns: 24px 1fr auto;
+            gap: 12px;
             align-items: center;
-            font-size: 14px;
-        }
-        
-        .trade-item:last-child { border-bottom: none; }
-        
-        .trade-icon { font-size: 16px; }
-        
-        .trade-details {
-            font-family: 'JetBrains Mono', monospace;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
             font-size: 13px;
         }
         
-        .trade-direction { font-weight: 600; }
-        .trade-meta { color: var(--text-muted); font-size: 12px; }
+        .trade-row:last-child { border-bottom: none; }
+        
+        .trade-row.pending-row {
+            background: var(--accent-dim);
+            margin: 0 -20px;
+            padding: 14px 20px;
+            border-left: 3px solid var(--accent);
+        }
+        
+        .trade-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        
+        .trade-icon.win { background: var(--up-dim); color: var(--up); }
+        .trade-icon.loss { background: var(--down-dim); color: var(--down); }
+        .trade-icon.open { background: var(--accent-dim); color: var(--accent); }
+        
+        .trade-info .dir {
+            font-weight: 600;
+            font-family: 'Space Mono', monospace;
+        }
+        
+        .trade-info .meta {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
         
         .trade-pnl {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Space Mono', monospace;
             font-weight: 600;
+            text-align: right;
         }
         
-        .trade-pnl.positive { color: var(--green); }
-        .trade-pnl.negative { color: var(--red); }
+        .trade-pnl.positive { color: var(--up); }
+        .trade-pnl.negative { color: var(--down); }
+        .trade-pnl.pending { color: var(--accent); }
         
-        .pending-trade {
-            background: rgba(210, 153, 34, 0.1);
-            border-left: 3px solid var(--yellow);
-        }
-        
-        .no-trades {
-            padding: 32px 16px;
+        .empty {
+            padding: 40px 20px;
             text-align: center;
-            color: var(--text-muted);
+            color: var(--text-dim);
+            font-size: 13px;
         }
         
         footer {
-            margin-top: 24px;
-            padding-top: 16px;
-            border-top: 1px solid var(--border);
-            font-size: 12px;
-            color: var(--text-muted);
             display: flex;
             justify-content: space-between;
-        }
-        
-        .auto-refresh {
-            display: flex;
             align-items: center;
-            gap: 6px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            font-size: 11px;
+            color: var(--text-dim);
         }
         
         .pulse {
-            width: 8px;
-            height: 8px;
-            background: var(--green);
+            width: 6px;
+            height: 6px;
+            background: var(--up);
             border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
             animation: pulse 2s infinite;
         }
         
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            50% { opacity: 0.4; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>
-                <span>📊</span>
-                BTC 5m Paper Trader
-            </h1>
-            <span class="status-badge {{ 'pending' if pending else 'live' }}">
+            <div class="logo">Polymarket BTC / 5m</div>
+            <span class="status {{ 'open' if pending else 'scanning' }}">
                 {{ "Position Open" if pending else "Scanning" }}
             </span>
         </header>
         
-        <div class="stats-grid">
-            <div class="stat">
-                <div class="stat-label">Bankroll</div>
-                <div class="stat-value">${{ "%.2f"|format(bankroll) }}</div>
+        <div class="hero">
+            <div class="hero-stat">
+                <div class="label">Bankroll</div>
+                <div class="value mono">${{ "%.2f"|format(bankroll) }}</div>
             </div>
-            <div class="stat">
-                <div class="stat-label">Total P&L</div>
-                <div class="stat-value {{ 'positive' if total_pnl >= 0 else 'negative' }}">
+            <div class="hero-stat">
+                <div class="label">Total P/L</div>
+                <div class="value {{ 'positive' if total_pnl >= 0 else 'negative' }}">
                     ${{ "%+.2f"|format(total_pnl) }}
                 </div>
             </div>
-            <div class="stat">
-                <div class="stat-label">Record</div>
-                <div class="stat-value">{{ wins }}W / {{ losses }}L</div>
+            <div class="hero-stat">
+                <div class="label">Record</div>
+                <div class="value mono">{{ wins }}-{{ losses }}</div>
             </div>
-            <div class="stat">
-                <div class="stat-label">Win Rate</div>
-                <div class="stat-value">{{ "%.0f"|format(win_rate * 100) }}%</div>
+            <div class="hero-stat">
+                <div class="label">Win Rate</div>
+                <div class="value mono">{{ "%.0f"|format(win_rate * 100) }}%</div>
             </div>
         </div>
         
-        <div class="grid">
-            <div class="card">
-                <div class="card-header">Current Price</div>
-                <div class="price-display">${{ "{:,.2f}".format(price) if price else "---" }}</div>
-                {% if momentum_1m %}
-                <div class="price-change {{ 'up' if momentum_1m >= 0 else 'down' }}">
-                    {{ "%+.3f"|format(momentum_1m * 100) }}% (1m)
+        <div class="panels">
+            <div class="panel">
+                <div class="panel-head">Price</div>
+                <div class="price-block">
+                    <div class="price">${{ "{:,.2f}".format(price) if price else "---" }}</div>
+                    {% if momentum_1m %}
+                    <div class="change {{ 'up' if momentum_1m >= 0 else 'down' }}">
+                        {{ "%+.3f"|format(momentum_1m * 100) }}% / 1m
+                    </div>
+                    {% endif %}
                 </div>
-                {% endif %}
             </div>
             
-            <div class="card">
-                <div class="card-header">Current Signal</div>
-                {% if last_signal %}
-                <div class="signal-card">
-                    <div>
-                        <div class="signal-item">
-                            <span class="signal-label">Direction</span>
-                            <span class="signal-value">{{ last_signal.direction }}</span>
+            <div class="panel">
+                <div class="panel-head">Signal</div>
+                <div class="panel-body">
+                    {% if last_signal %}
+                    <div class="signal-grid">
+                        <div>
+                            <div class="signal-row">
+                                <span class="key">Direction</span>
+                                <span class="val">{{ last_signal.direction }}</span>
+                            </div>
+                            <div class="signal-row">
+                                <span class="key">Edge</span>
+                                <span class="val">{{ "%.1f"|format(last_signal.edge * 100) }}%</span>
+                            </div>
+                            <div class="signal-row">
+                                <span class="key">Confidence</span>
+                                <span class="val">{{ last_signal.confidence }}</span>
+                            </div>
                         </div>
-                        <div class="signal-item">
-                            <span class="signal-label">Edge</span>
-                            <span class="signal-value">{{ "%.1f"|format(last_signal.edge * 100) }}%</span>
-                        </div>
-                        <div class="signal-item">
-                            <span class="signal-label">Confidence</span>
-                            <span class="signal-value">{{ last_signal.confidence }}</span>
+                        <div>
+                            <div class="signal-row">
+                                <span class="key">Our Prob</span>
+                                <span class="val">{{ "%.0f"|format(last_signal.our_probability * 100) }}%</span>
+                            </div>
+                            <div class="signal-row">
+                                <span class="key">Market</span>
+                                <span class="val">{{ "%.0f"|format(last_signal.market_probability * 100) }}%</span>
+                            </div>
                         </div>
                     </div>
-                    <div>
-                        <div class="signal-item">
-                            <span class="signal-label">Our Prob</span>
-                            <span class="signal-value">{{ "%.0f"|format(last_signal.our_probability * 100) }}%</span>
-                        </div>
-                        <div class="signal-item">
-                            <span class="signal-label">Market Prob</span>
-                            <span class="signal-value">{{ "%.0f"|format(last_signal.market_probability * 100) }}%</span>
-                        </div>
-                    </div>
+                    {% else %}
+                    <div class="empty">Awaiting signal</div>
+                    {% endif %}
                 </div>
-                {% else %}
-                <div style="color: var(--text-muted);">Waiting for signal...</div>
-                {% endif %}
             </div>
         </div>
         
         {% if components %}
-        <div class="card" style="margin-bottom: 16px;">
-            <div class="card-header">Strategy Components</div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
-                <div>
-                    <div class="signal-label">30s Momentum</div>
-                    <div class="signal-value" style="color: {{ 'var(--green)' if components.mom_30s >= 0 else 'var(--red)' }}">
-                        {{ "%+.4f"|format(components.mom_30s) }}
+        <div class="panel" style="margin-bottom: 24px;">
+            <div class="panel-head">Components</div>
+            <div class="panel-body">
+                <div class="components">
+                    <div class="comp">
+                        <div class="label">Mom 30s</div>
+                        <div class="value {{ 'up' if components.mom_30s >= 0 else 'down' }}">
+                            {{ "%+.4f"|format(components.mom_30s) }}
+                        </div>
+                        <div class="bar">
+                            <div class="bar-fill {{ 'up' if components.mom_30s >= 0 else 'down' }}" 
+                                 style="width: {{ (min(abs(components.mom_30s) * 10000, 100))|int }}%"></div>
+                        </div>
                     </div>
-                    <div class="momentum-bar">
-                        <div class="momentum-fill {{ 'positive' if components.mom_30s >= 0 else 'negative' }}" 
-                             style="width: {{ (min(abs(components.mom_30s) * 10000, 100))|int }}%"></div>
+                    <div class="comp">
+                        <div class="label">Mom 1m</div>
+                        <div class="value {{ 'up' if components.mom_1m >= 0 else 'down' }}">
+                            {{ "%+.4f"|format(components.mom_1m) }}
+                        </div>
+                        <div class="bar">
+                            <div class="bar-fill {{ 'up' if components.mom_1m >= 0 else 'down' }}" 
+                                 style="width: {{ (min(abs(components.mom_1m) * 10000, 100))|int }}%"></div>
+                        </div>
                     </div>
-                </div>
-                <div>
-                    <div class="signal-label">1m Momentum</div>
-                    <div class="signal-value" style="color: {{ 'var(--green)' if components.mom_1m >= 0 else 'var(--red)' }}">
-                        {{ "%+.4f"|format(components.mom_1m) }}
+                    <div class="comp">
+                        <div class="label">Mom 3m</div>
+                        <div class="value {{ 'up' if components.mom_3m >= 0 else 'down' }}">
+                            {{ "%+.4f"|format(components.mom_3m) }}
+                        </div>
+                        <div class="bar">
+                            <div class="bar-fill {{ 'up' if components.mom_3m >= 0 else 'down' }}" 
+                                 style="width: {{ (min(abs(components.mom_3m) * 10000, 100))|int }}%"></div>
+                        </div>
                     </div>
-                    <div class="momentum-bar">
-                        <div class="momentum-fill {{ 'positive' if components.mom_1m >= 0 else 'negative' }}" 
-                             style="width: {{ (min(abs(components.mom_1m) * 10000, 100))|int }}%"></div>
+                    <div class="comp">
+                        <div class="label">Accel</div>
+                        <div class="value {{ 'up' if components.mom_accel >= 0 else 'down' }}">
+                            {{ "%+.4f"|format(components.mom_accel) }}
+                        </div>
                     </div>
-                </div>
-                <div>
-                    <div class="signal-label">3m Momentum</div>
-                    <div class="signal-value" style="color: {{ 'var(--green)' if components.mom_3m >= 0 else 'var(--red)' }}">
-                        {{ "%+.4f"|format(components.mom_3m) }}
+                    <div class="comp">
+                        <div class="label">Volatility</div>
+                        <div class="value">{{ "%.4f"|format(components.volatility) }}</div>
                     </div>
-                    <div class="momentum-bar">
-                        <div class="momentum-fill {{ 'positive' if components.mom_3m >= 0 else 'negative' }}" 
-                             style="width: {{ (min(abs(components.mom_3m) * 10000, 100))|int }}%"></div>
-                    </div>
-                </div>
-                <div>
-                    <div class="signal-label">Acceleration</div>
-                    <div class="signal-value" style="color: {{ 'var(--green)' if components.mom_accel >= 0 else 'var(--red)' }}">
-                        {{ "%+.4f"|format(components.mom_accel) }}
-                    </div>
-                </div>
-                <div>
-                    <div class="signal-label">Volatility</div>
-                    <div class="signal-value">{{ "%.4f"|format(components.volatility) }}</div>
-                </div>
-                <div>
-                    <div class="signal-label">Trend Align</div>
-                    <div class="signal-value">
-                        {% if components.trend_alignment == 1 %}🟢 Bullish
-                        {% elif components.trend_alignment == -1 %}🔴 Bearish
-                        {% else %}⚪ Mixed{% endif %}
+                    <div class="comp">
+                        <div class="label">Trend</div>
+                        <div class="value">
+                            {% if components.trend_alignment == 1 %}UP
+                            {% elif components.trend_alignment == -1 %}DOWN
+                            {% else %}MIXED{% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         {% endif %}
         
-        <div class="grid">
-            <div class="log-container">
-                <div class="log-header">
-                    <span>Activity Log</span>
-                    <span>Last {{ logs|length }} events</span>
-                </div>
-                <div class="log-entries">
-                    {% for log in logs|reverse %}
-                    <div class="log-entry {{ log.level }}">
-                        <span class="log-time">{{ log.time }}</span>
-                        <span class="log-msg">{{ log.msg }}</span>
+        <div class="panels">
+            <div class="panel">
+                <div class="panel-head">Log</div>
+                <div class="panel-body">
+                    <div class="log-scroll">
+                        {% for log in logs|reverse %}
+                        <div class="log-entry {{ log.level }}">
+                            <span class="time">{{ log.time }}</span>
+                            <span class="msg">{{ log.msg }}</span>
+                        </div>
+                        {% else %}
+                        <div class="empty">Waiting for activity</div>
+                        {% endfor %}
                     </div>
-                    {% else %}
-                    <div class="log-entry">
-                        <span class="log-msg" style="color: var(--text-muted);">Waiting for activity...</span>
-                    </div>
-                    {% endfor %}
                 </div>
             </div>
             
-            <div class="trade-list">
-                <div class="trade-header">Recent Trades</div>
-                {% if pending %}
-                <div class="trade-item pending-trade">
-                    <span class="trade-icon">⏳</span>
-                    <div class="trade-details">
-                        <div><span class="trade-direction">{{ pending.direction }}</span> @ ${{ "{:,.2f}".format(pending.entry_price) }}</div>
-                        <div class="trade-meta">Edge: {{ "%.1f"|format(pending.edge * 100) }}% | Size: ${{ "%.2f"|format(pending.size) }}</div>
+            <div class="panel">
+                <div class="panel-head">Trades</div>
+                <div class="panel-body">
+                    <div class="trades-list">
+                        {% if pending %}
+                        <div class="trade-row pending-row">
+                            <div class="trade-icon open">O</div>
+                            <div class="trade-info">
+                                <div class="dir">{{ pending.direction }} @ ${{ "{:,.2f}".format(pending.entry_price) }}</div>
+                                <div class="meta">Edge {{ "%.1f"|format(pending.edge * 100) }}% / Size ${{ "%.2f"|format(pending.size) }}</div>
+                            </div>
+                            <div class="trade-pnl pending">OPEN</div>
+                        </div>
+                        {% endif %}
+                        {% for trade in trades[-10:]|reverse %}
+                        <div class="trade-row">
+                            <div class="trade-icon {{ 'win' if trade.won else 'loss' }}">{{ "W" if trade.won else "L" }}</div>
+                            <div class="trade-info">
+                                <div class="dir">{{ trade.direction }} @ ${{ "{:,.2f}".format(trade.entry_price) }}</div>
+                                <div class="meta">Edge {{ "%.1f"|format(trade.edge * 100) }}% / Exit ${{ "{:,.2f}".format(trade.exit_price) if trade.exit_price else "---" }}</div>
+                            </div>
+                            <div class="trade-pnl {{ 'positive' if trade.pnl and trade.pnl >= 0 else 'negative' }}">
+                                ${{ "%+.2f"|format(trade.pnl) if trade.pnl else "---" }}
+                            </div>
+                        </div>
+                        {% else %}
+                        {% if not pending %}
+                        <div class="empty">No trades yet</div>
+                        {% endif %}
+                        {% endfor %}
                     </div>
-                    <span></span>
-                    <span class="trade-pnl" style="color: var(--yellow);">OPEN</span>
                 </div>
-                {% endif %}
-                {% for trade in trades[-8:]|reverse %}
-                <div class="trade-item">
-                    <span class="trade-icon">{{ "✅" if trade.won else "❌" }}</span>
-                    <div class="trade-details">
-                        <div><span class="trade-direction">{{ trade.direction }}</span> @ ${{ "{:,.2f}".format(trade.entry_price) }}</div>
-                        <div class="trade-meta">Edge: {{ "%.1f"|format(trade.edge * 100) }}% | Exit: ${{ "{:,.2f}".format(trade.exit_price) if trade.exit_price else "---" }}</div>
-                    </div>
-                    <span></span>
-                    <span class="trade-pnl {{ 'positive' if trade.pnl and trade.pnl >= 0 else 'negative' }}">
-                        ${{ "%+.2f"|format(trade.pnl) if trade.pnl else "---" }}
-                    </span>
-                </div>
-                {% else %}
-                {% if not pending %}
-                <div class="no-trades">No trades yet. Waiting for edge...</div>
-                {% endif %}
-                {% endfor %}
             </div>
         </div>
         
         <footer>
-            <span>Started: {{ start_time }}</span>
-            <div class="auto-refresh">
-                <div class="pulse"></div>
-                <span>Auto-refresh 5s</span>
-            </div>
+            <span>Started {{ start_time }}</span>
+            <span><span class="pulse"></span>Auto-refresh 5s</span>
         </footer>
     </div>
     
-    <script>
-        setTimeout(() => location.reload(), 5000);
-    </script>
+    <script>setTimeout(() => location.reload(), 5000);</script>
 </body>
 </html>
 """

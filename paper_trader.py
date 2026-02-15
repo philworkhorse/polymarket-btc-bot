@@ -155,7 +155,7 @@ class PaperTrader:
             thought += "| Trend: MIXED "
             
         if components.get('high_vol'):
-            thought += "| ⚠️ HIGH VOL "
+            thought += "| HIGH VOL "
             
         self.log(thought)
         
@@ -205,7 +205,7 @@ class PaperTrader:
             components=signal.components
         )
         
-        self.log(f"📝 TRADE PLACED: {signal.direction} ${size:.2f} @ ${price:,.2f}", "trade")
+        self.log(f"TRADE: {signal.direction} ${size:.2f} @ ${price:,.2f}", "trade")
         
     async def settle_trade(self):
         """Settle pending trade against current price"""
@@ -243,10 +243,10 @@ class PaperTrader:
         
         if won:
             self.wins += 1
-            self.log(f"✅ WIN: {trade.direction} | P&L: ${pnl:+.2f} | Record: {self.wins}W-{self.losses}L", "win")
+            self.log(f"WIN: {trade.direction} | P&L: ${pnl:+.2f} | Record: {self.wins}W-{self.losses}L", "win")
         else:
             self.losses += 1
-            self.log(f"❌ LOSS: {trade.direction} | P&L: ${pnl:+.2f} | Record: {self.wins}W-{self.losses}L", "loss")
+            self.log(f"LOSS: {trade.direction} | P&L: ${pnl:+.2f} | Record: {self.wins}W-{self.losses}L", "loss")
         
         self.log(f"Bankroll: ${self.bankroll:.2f} | Total P&L: ${self.total_pnl:+.2f}")
         
