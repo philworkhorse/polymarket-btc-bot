@@ -1,0 +1,9 @@
+[2026-02-15 14:10:05 -0500] [70688] [INFO] Starting gunicorn 25.1.0
+[2026-02-15 14:10:05 -0500] [70688] [INFO] Listening at: http://0.0.0.0:8080 (70688)
+[2026-02-15 14:10:05 -0500] [70688] [INFO] Using worker: gthread
+[2026-02-15 14:10:05 -0500] [70688] [INFO] Control socket listening at /Users/trentishee-dunn/projects/polymarket-btc-bot/gunicorn.ctl
+[2026-02-15 14:10:05 -0500] [70690] [INFO] Booting worker with pid: 70690
+[2026-02-15 14:11:40 -0500] [70688] [INFO] Handling signal: term
+[2026-02-15 14:11:40 -0500] [70690] [INFO] Worker exiting (pid: 70690)
+[2026-02-15 14:11:40 -0500] [70688] [INFO] Worker (pid:70690) was sent SIGTERM!
+[2026-02-15 14:11:40 -0500] [70688] [INFO] Shutting down: Master

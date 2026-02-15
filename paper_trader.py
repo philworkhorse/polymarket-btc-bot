@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 from dataclasses import dataclass, asdict
-from typing import Optional
+from typing import Optional, Callable
 
 from price_feed import BTCPriceFeed
 from strategy import EnhancedStrategy
@@ -34,7 +34,7 @@ class PaperTrade:
     pnl: Optional[float] = None
 
 class PaperTrader:
-    def __init__(self):
+    def __init__(self, log_callback: Optional[Callable] = None):
         self.price_feed = BTCPriceFeed()
         self.strategy = EnhancedStrategy(min_edge=config.MIN_EDGE)
         
@@ -46,6 +46,10 @@ class PaperTrader:
         self.pending_trade: Optional[PaperTrade] = None
         self.market_start_price: Optional[float] = None
         self.market_end_time: Optional[float] = None
+        self.last_signal = None
+        
+        # Log callback for web UI
+        self.log_callback = log_callback
         
         # Files
         self.trades_file = Path("paper_trades.jsonl")
@@ -55,18 +59,16 @@ class PaperTrader:
         self.wins = 0
         self.losses = 0
         
-    def log(self, msg: str):
+    def log(self, msg: str, level: str = "info"):
         ts = datetime.now().strftime("%H:%M:%S")
         print(f"[{ts}] {msg}")
+        if self.log_callback:
+            self.log_callback(msg, level)
         
     async def run(self):
         """Main paper trading loop"""
-        self.log("=" * 50)
-        self.log("PAPER TRADING BOT - Polymarket 5m BTC")
-        self.log(f"Starting bankroll: ${self.bankroll:.2f}")
-        self.log(f"Min edge: {config.MIN_EDGE:.1%}")
-        self.log(f"Base bet: ${config.BET_SIZE:.2f}")
-        self.log("=" * 50)
+        self.log("Bot starting up...")
+        self.log(f"Config: Min edge {config.MIN_EDGE:.1%}, Base bet ${config.BET_SIZE}")
         
         # Start price feed
         price_task = asyncio.create_task(self.price_feed.start())
@@ -75,14 +77,14 @@ class PaperTrader:
         self.log("Warming up price feed (30s)...")
         await asyncio.sleep(30)
         
-        self.log("Starting paper trading...")
+        self.log("Price feed ready. Starting paper trading loop.", "signal")
         
         try:
             while True:
                 await self.trading_cycle()
                 await asyncio.sleep(2)
         except KeyboardInterrupt:
-            self.log("\nShutting down...")
+            self.log("Shutting down...")
             self.save_stats()
         finally:
             self.price_feed.stop()
@@ -97,7 +99,6 @@ class PaperTrader:
         price = self.price_feed.current_price
         
         # Simulate market timing (5-minute intervals)
-        # Markets start at :00, :05, :10, etc.
         current_minute = int(now // 60)
         market_minute = (current_minute // 5) * 5
         market_start = market_minute * 60
@@ -114,7 +115,7 @@ class PaperTrader:
             self.market_end_time = market_end
             self.market_start_price = price
             self.pending_trade = None
-            self.log(f"\n--- New 5m market | Start: ${price:,.2f} | Ends in {time_remaining}s ---")
+            self.log(f"New 5m market opened | Reference: ${price:,.2f} | {time_remaining}s remaining", "signal")
             
         # Don't trade in last 30 seconds
         if time_remaining < 30:
@@ -125,7 +126,6 @@ class PaperTrader:
             return
             
         # Simulate market prices (in reality, fetch from Polymarket)
-        # For paper trading, assume market is ~50/50 with slight spread
         market_up = 0.51
         market_down = 0.49
         
@@ -137,15 +137,41 @@ class PaperTrader:
             time_remaining
         )
         
-        # Log signal
-        mom_1m = self.price_feed.get_momentum(60) or 0
-        self.log(f"Signal: {signal.direction} | Edge: {signal.edge:.1%} | Conf: {signal.confidence} | Mom1m: {mom_1m*100:.3f}%")
+        # Store for display
+        self.last_signal = signal
         
-        # Should we trade?
-        if not signal.should_bet:
-            return
+        # Build thought process log
+        components = signal.components
+        thought = f"Analyzing: "
+        thought += f"Mom(30s)={components['mom_30s']*100:+.3f}% "
+        thought += f"Mom(1m)={components['mom_1m']*100:+.3f}% "
+        thought += f"Accel={components['mom_accel']*100:+.4f}% "
+        
+        if components.get('trend_alignment') == 1:
+            thought += "| Trend: ALIGNED UP "
+        elif components.get('trend_alignment') == -1:
+            thought += "| Trend: ALIGNED DOWN "
+        else:
+            thought += "| Trend: MIXED "
             
-        if signal.edge < config.MIN_EDGE:
+        if components.get('high_vol'):
+            thought += "| ⚠️ HIGH VOL "
+            
+        self.log(thought)
+        
+        # Log decision
+        decision = f"Signal: {signal.direction} | Edge: {signal.edge:.1%} | Conf: {signal.confidence}"
+        if signal.should_bet and signal.edge >= config.MIN_EDGE:
+            decision += " → TRADEABLE"
+            self.log(decision, "signal")
+        else:
+            if signal.edge < config.MIN_EDGE:
+                decision += f" → PASS (edge < {config.MIN_EDGE:.1%})"
+            elif signal.confidence == "LOW":
+                decision += " → PASS (low confidence)"
+            else:
+                decision += " → PASS"
+            self.log(decision)
             return
             
         # Calculate size
@@ -158,7 +184,12 @@ class PaperTrader:
         )
         
         if size < 1:
+            self.log(f"Bet size too small (${size:.2f}), skipping")
             return
+        
+        # Log sizing rationale
+        kelly_mult = signal.edge / 0.10 * 0.25
+        self.log(f"Sizing: Base ${config.BET_SIZE} × {signal.confidence} × Kelly({kelly_mult:.2f}) = ${size:.2f}")
             
         # Place paper trade
         self.pending_trade = PaperTrade(
@@ -174,7 +205,7 @@ class PaperTrader:
             components=signal.components
         )
         
-        self.log(f"📝 PAPER TRADE: {signal.direction} ${size:.2f} @ ${price:,.2f} | Edge: {signal.edge:.1%}")
+        self.log(f"📝 TRADE PLACED: {signal.direction} ${size:.2f} @ ${price:,.2f}", "trade")
         
     async def settle_trade(self):
         """Settle pending trade against current price"""
@@ -186,15 +217,16 @@ class PaperTrader:
         
         # Determine winner
         price_went_up = exit_price >= self.market_start_price
+        price_change = (exit_price - self.market_start_price) / self.market_start_price * 100
         
         if trade.direction == "UP":
             won = price_went_up
         else:
             won = not price_went_up
+        
+        self.log(f"Market closed: ${self.market_start_price:,.2f} → ${exit_price:,.2f} ({price_change:+.2f}%)")
             
         # Calculate P&L
-        # If won: profit = size * (1/market_prob - 1) approximately
-        # Simplified: assume ~2x payout on win
         if won:
             pnl = trade.size * 0.95  # 95% of bet (accounting for edge)
         else:
@@ -211,15 +243,14 @@ class PaperTrader:
         
         if won:
             self.wins += 1
+            self.log(f"✅ WIN: {trade.direction} | P&L: ${pnl:+.2f} | Record: {self.wins}W-{self.losses}L", "win")
         else:
             self.losses += 1
-            
-        self.trades.append(trade)
+            self.log(f"❌ LOSS: {trade.direction} | P&L: ${pnl:+.2f} | Record: {self.wins}W-{self.losses}L", "loss")
         
-        # Log result
-        emoji = "✅" if won else "❌"
-        self.log(f"{emoji} SETTLED: {trade.direction} | Start: ${self.market_start_price:,.2f} → End: ${exit_price:,.2f} | PnL: ${pnl:+.2f}")
-        self.log(f"   Record: {self.wins}W-{self.losses}L | Daily: ${self.daily_pnl:+.2f} | Total: ${self.total_pnl:+.2f} | Bankroll: ${self.bankroll:.2f}")
+        self.log(f"Bankroll: ${self.bankroll:.2f} | Total P&L: ${self.total_pnl:+.2f}")
+        
+        self.trades.append(trade)
         
         # Save trade
         with open(self.trades_file, "a") as f:
@@ -242,14 +273,6 @@ class PaperTrader:
         
         with open(self.stats_file, "w") as f:
             json.dump(stats, f, indent=2)
-            
-        self.log("\n" + "=" * 50)
-        self.log("FINAL STATS")
-        self.log(f"Total trades: {len(self.trades)}")
-        self.log(f"Record: {self.wins}W-{self.losses}L ({stats['win_rate']:.1%})")
-        self.log(f"Total P&L: ${self.total_pnl:+.2f}")
-        self.log(f"Final bankroll: ${self.bankroll:.2f}")
-        self.log("=" * 50)
 
 
 async def main():

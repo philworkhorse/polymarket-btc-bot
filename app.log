@@ -1,0 +1,14 @@
+[14:09:15] ==================================================
+[14:09:15] PAPER TRADING BOT - Polymarket 5m BTC
+[14:09:15] Starting bankroll: $1000.00
+[14:09:15] Min edge: 3.0%
+[14:09:15] Base bet: $10.00
+[14:09:15] ==================================================
+[14:09:15] Warming up price feed (30s)...
+ * Serving Flask app 'app'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.1.174:8080
+[33mPress CTRL+C to quit[0m
